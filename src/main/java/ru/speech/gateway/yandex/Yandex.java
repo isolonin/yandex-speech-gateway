@@ -8,6 +8,7 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -15,7 +16,6 @@ import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.omg.CORBA_2_3.portable.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -49,7 +49,8 @@ public class Yandex {
             post.setEntity(httpEntity);
             HttpResponse response = httpClient.execute(post);            
             String xmlContent = EntityUtils.toString(response.getEntity());
-            LOG.info("yandex resul {}:{}",response.getStatusLine(), xmlContent);
+            Header xYaRequestId = response.getFirstHeader("X-YaRequestId");            
+            LOG.info("yandex resul {} ({}):\n{}",response.getStatusLine(), xYaRequestId.getValue(), xmlContent);
             
             List<String> yandexResultToList = yandexResultToList(xmlContent);
             return yandexResultToList;
@@ -82,7 +83,7 @@ public class Yandex {
                         }
                     }
                 }else {
-                    LOG.warn("Can't parse");
+                    LOG.warn("Yandex return empty");
                 }
             }
         } catch (ParserConfigurationException | SAXException | IOException ex) {
