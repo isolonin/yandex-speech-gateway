@@ -2,8 +2,15 @@ package ru.speech.gateway.yandex;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -13,6 +20,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -32,6 +40,82 @@ import org.xml.sax.SAXException;
  */
 public class Yandex {
     private static final Logger LOG = LoggerFactory.getLogger(Yandex.class);
+    private static final String CACHEPATH = "cache/";
+    private static final String FILEUSERATTR = "user:speech-text";
+    
+    public static String textToSpeech(String fileName, String key, String text, String format, String speaker, String emotion){
+        try{
+            //curl -v "https://tts.voicetech.yandex.net/generate?format=mp3&lang=ru-RU&speaker=oksana&
+            //key=e88f99d1-d019-467b-b80c-9fb05563c688&emotion=good" -G --data-urlencode 
+            //"text=Здравствуйте. Вас приветствует сеть 112. Продиктуйте номер машины" > speech.mp3
+            
+            File file = new File(CACHEPATH+fileName);            
+            
+            //Если файл есть в кэше, проверяем текст записи и дату модификации
+            if(file.exists()){                
+                Date lastModified = new Date(file.lastModified());
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                
+                Calendar currentTime = Calendar.getInstance();
+                currentTime.setTime(new Date());
+                currentTime.add(Calendar.DAY_OF_MONTH, -3);
+                if(lastModified.after(currentTime.getTime())){
+                    LOG.info("File \"{}\" exist in cache. Last modified {}", file.getAbsoluteFile(), sdf.format(lastModified));
+                
+                    //Проверяем текст записи в файле
+                    try{
+                        String attrFileText = new String((byte[])Files.getAttribute(file.toPath(), FILEUSERATTR));                        
+                        if(attrFileText.equalsIgnoreCase(text)){
+                            LOG.info("Return from cache");
+                            return file.getAbsolutePath();
+                        }else {
+                            LOG.info("File attr {} diff between \"{}\" and \"{}\"", FILEUSERATTR, attrFileText, text);
+                        }
+                    }catch(Exception ex){
+                        LOG.warn("Files.getAttribute exception: {}", ex.getMessage());
+                    }
+                }else {
+                    LOG.info("File \"{}\" EXPIRED in cache. Last modified {}", file.getAbsoluteFile(), sdf.format(lastModified));
+                }
+                LOG.info("Rewrite file");
+            }
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append("https://tts.voicetech.yandex.net/generate?format=");
+            sb.append(format);
+            sb.append("&lang=ru-RU&speaker=");
+            sb.append(speaker);
+            sb.append("&key=");
+            sb.append(key);
+            sb.append("&emotion=");
+            sb.append(emotion);
+            sb.append("&text=");
+            sb.append(URLEncoder.encode(text, "UTF-8"));
+            
+            LOG.info("Send to Yandex:\n{}",sb.toString());
+            HttpClient httpClient = HttpClientBuilder.create().build();            
+            HttpGet get = new HttpGet(sb.toString());
+            HttpResponse response = httpClient.execute(get);
+            HttpEntity entity = response.getEntity();
+            Header xYaRequestId = response.getFirstHeader("X-YaRequestId");
+            LOG.info("yandex resul {} ({})",response.getStatusLine(), xYaRequestId.getValue());
+            
+            if(entity != null) {
+                InputStream is = entity.getContent();
+                FileOutputStream fos = new FileOutputStream(file);
+                int inByte;
+                while((inByte = is.read()) != -1)
+                     fos.write(inByte);
+                is.close();
+                fos.close();
+            }
+            Files.setAttribute(file.toPath(), FILEUSERATTR, text.getBytes("UTF-8"));
+            return file.getAbsolutePath();
+        }catch(Exception ex){
+            LOG.error("Exception ",ex);
+        }
+        return null;
+    }
     
     public static List<String> speechToTextList(String key, String fileName){
         try {

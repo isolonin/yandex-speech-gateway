@@ -2,7 +2,6 @@ package ru.speech.gateway;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.log4j.PropertyConfigurator;
 import org.asteriskjava.fastagi.AgiScript;
@@ -10,9 +9,9 @@ import org.asteriskjava.fastagi.DefaultAgiServer;
 import org.asteriskjava.fastagi.SimpleMappingStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.speech.gateway.asterisk.AgiRecv;
+import ru.speech.gateway.asterisk.AGISpeechToText;
+import ru.speech.gateway.asterisk.AGITextToSpeech;
 import ru.speech.gateway.monitor.Terminator;
-import ru.speech.gateway.yandex.Yandex;
 
 /**
  *
@@ -27,7 +26,8 @@ public class Run{
             LOG.info("start");
             
             Map<String, AgiScript> map = new HashMap<>();
-            map.put("yandex-speech.agi", new AgiRecv());
+            map.put("yandex-speech-to-text.agi", new AGISpeechToText());
+            map.put("yandex-text-to-speech.agi", new AGITextToSpeech());
             
             SimpleMappingStrategy mappingStrategy = new SimpleMappingStrategy();
             mappingStrategy.setMappings(map);

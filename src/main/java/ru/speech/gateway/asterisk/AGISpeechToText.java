@@ -10,46 +10,31 @@ import org.asteriskjava.fastagi.BaseAgiScript;
 import org.asteriskjava.live.ChannelState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static ru.speech.gateway.asterisk.AGITextToSpeech.getValueByParameters;
+import ru.speech.gateway.exceptions.KeyNotFound;
 import ru.speech.gateway.yandex.Yandex;
 
 /**
  *
  * @author ivan
  */
-public class AgiRecv extends BaseAgiScript{
-    private static final Logger LOG = LoggerFactory.getLogger(AgiRecv.class);
+public class AGISpeechToText extends BaseAgiScript{
+    private static final Logger LOG = LoggerFactory.getLogger(AGISpeechToText.class);
     
     @Override
     public void service(AgiRequest ar, AgiChannel ac) throws AgiException {
         try{
-            Double maxSilence = 2.0;            
             Thread.currentThread().setName(ar.getCallerIdNumber());
             
-            String[] keyResult = ar.getParameterValues("key");
-            if(keyResult.length <= 0){
-                LOG.error("yandex KEY is not defined");
-                return;
-            }
-            String key = keyResult[0];
-            
-            String[] maxSilenceResult = ar.getParameterValues("maxSilence");
-            if(maxSilenceResult.length > 0){
-                maxSilence = new Double(maxSilenceResult[0]);
-            }
+            String key = getValueByParameters(ar, "key", true);
+            Double maxSilence = new Double(getValueByParameters(ar, "key", false, "2"));
             
             //Answer channel if not already answered
-            int channelStatus = getChannelStatus();            
+            int channelStatus = getChannelStatus();     
             if(channelStatus == ChannelState.RING.getStatus()){
                 answer();
                 LOG.info("Channel answer");
             }
-            
-//            Format format = detectFormat();
-//            if(format == null){
-//                LOG.error("Can't define channel format");
-//                return;
-//            }
-//            LOG.info("Channel format {}",format.toString());
             
             String fileName = "/tmp/"+UUID.randomUUID().toString();
             LOG.info("Record to file {}", fileName);
@@ -75,6 +60,8 @@ public class AgiRecv extends BaseAgiScript{
             }else {
                 LOG.error("Record file is empty");
             }
+        }catch(KeyNotFound ex){
+            LOG.error(ex.getMessage());
         }catch(AgiException ex){
             LOG.error("Exception ", ex);
         }
