@@ -49,7 +49,12 @@ public class AGITextToSpeech extends BaseAgiScript{
             if(fileName == null){
                 fileName = UUID.randomUUID().toString();
             }
-            Yandex.textToSpeech(fileName, key, text, format, speaker, emotion);
+            String filePath = Yandex.textToSpeech(fileName, key, text, format, speaker, emotion);
+            if(filePath != null){
+                String ext = filePath.replaceFirst("\\..*$", "");
+                int result = exec("Playback", filePath.replaceFirst("\\.(.*)$", ",$1"));
+                LOG.info("exec return {}", result);
+            }            
         }catch(KeyNotFound ex){
             LOG.error(ex.getMessage());
         }catch(Exception ex){

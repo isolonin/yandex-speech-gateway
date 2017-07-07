@@ -73,6 +73,7 @@ public class Yandex {
                         }
                     }catch(Exception ex){
                         LOG.warn("Files.getAttribute exception: {}", ex.getMessage());
+                        return file.getAbsolutePath();
                     }
                 }else {
                     LOG.info("File \"{}\" EXPIRED in cache. Last modified {}", file.getAbsoluteFile(), sdf.format(lastModified));
@@ -81,7 +82,7 @@ public class Yandex {
             }
             
             StringBuilder sb = new StringBuilder();
-            sb.append("https://tts.voicetech.yandex.net/generate?format=");
+            sb.append("https://tts.voicetech.yandex.net/generate?quality=lo&format=");
             sb.append(format);
             sb.append("&lang=ru-RU&speaker=");
             sb.append(speaker);
@@ -108,8 +109,13 @@ public class Yandex {
                      fos.write(inByte);
                 is.close();
                 fos.close();
+            }            
+            
+            try{
+                Files.setAttribute(file.toPath(), FILEUSERATTR, text.getBytes("UTF-8"));
+            }catch(Exception ex){
+                LOG.warn("Files.getAttribute exception: {}", ex.getMessage());
             }
-            Files.setAttribute(file.toPath(), FILEUSERATTR, text.getBytes("UTF-8"));
             return file.getAbsolutePath();
         }catch(Exception ex){
             LOG.error("Exception ",ex);
