@@ -27,7 +27,7 @@ public class AGISpeechToText extends BaseAgiScript{
             Thread.currentThread().setName(ar.getCallerIdNumber());
             
             String key = getValueByParameters(ar, "key", true);
-            Double maxSilence = new Double(getValueByParameters(ar, "key", false, "2"));
+            Double maxSilence = new Double(getValueByParameters(ar, "maxSilence", false, "2"));
             
             //Answer channel if not already answered
             int channelStatus = getChannelStatus();     
