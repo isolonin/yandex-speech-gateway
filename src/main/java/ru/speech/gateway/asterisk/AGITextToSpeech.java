@@ -47,7 +47,7 @@ public class AGITextToSpeech extends BaseAgiScript{
             String emotion = getValueByParameters(ar, "emotion", false, "neutral");            
             String fileName = getValueByParameters(ar, "file", false);
             if(fileName == null){
-                fileName = UUID.randomUUID().toString();
+                fileName = UUID.randomUUID().toString()+"."+format;
             }
             String filePath = Yandex.textToSpeech(fileName, key, text, format, speaker, emotion);
             if(filePath != null){
