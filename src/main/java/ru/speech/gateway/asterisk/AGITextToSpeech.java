@@ -25,7 +25,7 @@ public class AGITextToSpeech extends BaseAgiScript{
         return defaultValue;
     }
     public static String getValueByParameters(AgiRequest ar, String key, boolean isRequired) throws KeyNotFound{
-        String[] keyResult = ar.getParameterValues("key");
+        String[] keyResult = ar.getParameterValues(key);
         if(isRequired && keyResult.length <= 0){
             throw new KeyNotFound("AGI "+key+" is not defined");
         }
@@ -36,7 +36,7 @@ public class AGITextToSpeech extends BaseAgiScript{
     }
     
     @Override
-    public void service(AgiRequest ar, AgiChannel ac) throws AgiException {
+    public void service(AgiRequest ar, AgiChannel ac) {
         try{
             Thread.currentThread().setName(ar.getCallerIdNumber());
             
@@ -47,9 +47,8 @@ public class AGITextToSpeech extends BaseAgiScript{
             String emotion = getValueByParameters(ar, "emotion", false, "neutral");            
             String fileName = getValueByParameters(ar, "file", false);
             if(fileName == null){
-                fileName = "/tmp/"+UUID.randomUUID().toString();
-            }            
-            LOG.info("Send text to yandex");
+                fileName = UUID.randomUUID().toString();
+            }
             Yandex.textToSpeech(fileName, key, text, format, speaker, emotion);
         }catch(KeyNotFound ex){
             LOG.error(ex.getMessage());
