@@ -134,7 +134,7 @@ public class Yandex {
             HttpEntity httpEntity = EntityBuilder.create()
                     .setFile(new File(fileName))
                     .build();
-            HttpPost post = new HttpPost("https://asr.yandex.net/asr_xml?uuid=d66f657f39fa436a8cd6c378746f6354&key="+key+"&topic=queries");
+            HttpPost post = new HttpPost("https://asr.yandex.net/asr_xml?uuid=d66f657f39fa436a8cd6c378746f6354&lang=ru-RU&key="+key+"&topic=queries");
             post.setHeader("Content-Type", "audio/x-wav");
             post.setEntity(httpEntity);
             HttpResponse response = httpClient.execute(post);            
