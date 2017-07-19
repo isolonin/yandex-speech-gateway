@@ -41,7 +41,6 @@ import org.xml.sax.SAXException;
 public class Yandex {
     private static final Logger LOG = LoggerFactory.getLogger(Yandex.class);
     private static final String CACHEPATH = "cache/";
-    private static final String FILEUSERATTR = "user:speech-text";
     
     public static String textToSpeech(String fileName, String key, String text, String format, String speaker, String emotion){
         try{
@@ -61,20 +60,6 @@ public class Yandex {
                 currentTime.add(Calendar.DAY_OF_MONTH, -3);
                 if(lastModified.after(currentTime.getTime())){
                     LOG.info("File \"{}\" exist in cache. Last modified {}", file.getAbsoluteFile(), sdf.format(lastModified));
-                
-                    //Проверяем текст записи в файле
-                    try{
-                        String attrFileText = new String((byte[])Files.getAttribute(file.toPath(), FILEUSERATTR));                        
-                        if(attrFileText.equalsIgnoreCase(text)){
-                            LOG.info("Return from cache");
-                            return file.getAbsolutePath();
-                        }else {
-                            LOG.info("File attr {} diff between \"{}\" and \"{}\"", FILEUSERATTR, attrFileText, text);
-                        }
-                    }catch(Exception ex){
-                        LOG.warn("Files.getAttribute exception: {}", ex.getMessage());
-                        return file.getAbsolutePath();
-                    }
                 }else {
                     LOG.info("File \"{}\" EXPIRED in cache. Last modified {}", file.getAbsoluteFile(), sdf.format(lastModified));
                 }
@@ -111,11 +96,6 @@ public class Yandex {
                 fos.close();
             }            
             
-            try{
-                Files.setAttribute(file.toPath(), FILEUSERATTR, text.getBytes("UTF-8"));
-            }catch(Exception ex){
-                LOG.warn("Files.getAttribute exception: {}", ex.getMessage());
-            }
             return file.getAbsolutePath();
         }catch(Exception ex){
             LOG.error("Exception ",ex);
