@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import ru.speech.gateway.asterisk.AGISpeechToText;
 import ru.speech.gateway.asterisk.AGITextToSpeech;
 import ru.speech.gateway.monitor.Terminator;
-import static ru.vehicleutils.utils.Utils.getVehicleNumberByText;
 
 /**
  *

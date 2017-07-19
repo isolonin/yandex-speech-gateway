@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.asteriskjava.fastagi.AgiChannel;
 import org.asteriskjava.fastagi.AgiException;
 import org.asteriskjava.fastagi.AgiRequest;
@@ -31,6 +32,7 @@ public class AGISpeechToText extends BaseAgiScript{
             Thread.currentThread().setName(ar.getCallerIdNumber());
             
             String key = getValueByParameters(ar, "key", true);
+            String sayWaitText = getValueByParameters(ar, "say_wait_text", false);
             Double maxSilence = new Double(getValueByParameters(ar, "maxSilence", false, "2"));
             
             //Answer channel if not already answered
@@ -43,6 +45,12 @@ public class AGISpeechToText extends BaseAgiScript{
             String fileName = "/tmp/"+UUID.randomUUID().toString();
             LOG.info("Record to file {}", fileName);
             recordFile(fileName, "wav", "#", 10000, 0, false, maxSilence.intValue());
+            
+            if(sayWaitText != null){
+                String sayWaitTextPath = Yandex.textToSpeech(DigestUtils.md5Hex(sayWaitText)+".wav", key, sayWaitText, "wav", "oksana", "good");
+                int result = exec("Playback", sayWaitTextPath.replaceFirst("\\.(.*)$", ",$1"));
+                LOG.info("exec return {}", result);
+            }
 
             LOG.info("Send file to yandex");
             File recordFfile = new File(fileName+".wav");

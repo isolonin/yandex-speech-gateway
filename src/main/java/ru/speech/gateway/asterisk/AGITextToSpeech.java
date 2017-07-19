@@ -1,8 +1,7 @@
 package ru.speech.gateway.asterisk;
 
-import java.util.UUID;
+import org.apache.commons.codec.digest.Md5Crypt;
 import org.asteriskjava.fastagi.AgiChannel;
-import org.asteriskjava.fastagi.AgiException;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.BaseAgiScript;
 import org.slf4j.Logger;
@@ -44,10 +43,10 @@ public class AGITextToSpeech extends BaseAgiScript{
             String text = getValueByParameters(ar, "text", true);
             String format = getValueByParameters(ar, "format", false, "wav");
             String speaker = getValueByParameters(ar, "speaker", false, "oksana");
-            String emotion = getValueByParameters(ar, "emotion", false, "neutral");            
+            String emotion = getValueByParameters(ar, "emotion", false, "good");
             String fileName = getValueByParameters(ar, "file", false);
             if(fileName == null){
-                fileName = UUID.randomUUID().toString()+"."+format;
+                fileName = Md5Crypt.md5Crypt(text.getBytes())+"."+format;
             }
             String filePath = Yandex.textToSpeech(fileName, key, text, format, speaker, emotion);
             if(filePath != null){
@@ -60,47 +59,5 @@ public class AGITextToSpeech extends BaseAgiScript{
         }catch(Exception ex){
             LOG.error("Exception ", ex);
         }
-    }
-    
-    @Deprecated
-    private Format detectFormat(){
-        try {            
-            String audionativeformat = getFullVariable("${CHANNEL(audionativeformat)}");
-            LOG.debug("audionativeformat: {}", audionativeformat);
-            if(audionativeformat.matches("(silk|sln)12")){
-                return new Format("sln12", 12000);
-            }
-            if(audionativeformat.matches("(speex|slin|silk)16|g722|siren7")){
-                return new Format("sln16", 16000);
-            }
-            if(audionativeformat.matches("(speex|slin|celt)32|siren14")){
-                return new Format("sln32", 32000);
-            }
-            if(audionativeformat.matches("(celt|slin)44")){
-                return new Format("sln44", 44100);
-            }
-            if(audionativeformat.matches("(celt|slin)48")){
-                return new Format("sln48", 48000);
-            }
-            return new Format("sln", 8000);
-        } catch (AgiException ex) {
-            LOG.error("Exception {}",ex);
-        }
-        return null;
-    }
-    
-    private class Format{
-        String name;
-        Integer freq;
-
-        public Format(String name, Integer freq) {
-            this.name = name;
-            this.freq = freq;
-        }
-
-        @Override
-        public String toString() {
-            return name+"/"+freq;
-        }   
     }
 }
