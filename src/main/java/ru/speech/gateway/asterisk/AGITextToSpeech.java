@@ -1,6 +1,6 @@
 package ru.speech.gateway.asterisk;
 
-import org.apache.commons.codec.digest.Md5Crypt;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.asteriskjava.fastagi.AgiChannel;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.BaseAgiScript;
@@ -46,7 +46,7 @@ public class AGITextToSpeech extends BaseAgiScript{
             String emotion = getValueByParameters(ar, "emotion", false, "good");
             String fileName = getValueByParameters(ar, "file", false);
             if(fileName == null){
-                fileName = Md5Crypt.md5Crypt(text.getBytes())+"."+format;
+                fileName = DigestUtils.md5Hex(text.getBytes())+"."+format;
             }
             String filePath = Yandex.textToSpeech(fileName, key, text, format, speaker, emotion);
             if(filePath != null){
