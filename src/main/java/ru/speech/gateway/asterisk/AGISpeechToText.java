@@ -1,6 +1,8 @@
 package ru.speech.gateway.asterisk;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.asteriskjava.fastagi.AgiChannel;
@@ -13,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import static ru.speech.gateway.asterisk.AGITextToSpeech.getValueByParameters;
 import ru.speech.gateway.exceptions.KeyNotFound;
 import ru.speech.gateway.yandex.Yandex;
+import ru.vehicleutils.models.VehicleNumber;
+import static ru.vehicleutils.utils.Utils.getVehicleNumberByText;
 
 /**
  *
@@ -45,6 +49,7 @@ public class AGISpeechToText extends BaseAgiScript{
             if(recordFfile.length() > 0){
                 List<String> speechToTextList = Yandex.speechToTextList(key, fileName+".wav");
                 if(speechToTextList.isEmpty() == false){
+                    //fill RESUL_ARRAY
                     StringBuilder sb = new StringBuilder();
                     for(int i=0; i<speechToTextList.size(); i++){
                         String text = speechToTextList.get(i);
@@ -54,6 +59,26 @@ public class AGISpeechToText extends BaseAgiScript{
                         }
                     }
                     setVariable("RESUL_ARRAY", sb.toString());
+                    
+                    //Get alpha-numeric number
+                    List<VehicleNumber> vehicleNumberList = new ArrayList<>();
+                    for(String text:speechToTextList){
+                        VehicleNumber vehicleNumber = getVehicleNumberByText(text);
+                        if(vehicleNumber != null){
+                            vehicleNumberList.add(vehicleNumber);
+                        }
+                    }
+                    if(vehicleNumberList.isEmpty() == false){
+                        Collections.sort(vehicleNumberList);
+                        VehicleNumber vehicleNumber = vehicleNumberList.get(0);
+                        setVariable("TRANSPORT_CHARS", vehicleNumber.getTransportChars());
+                        if(vehicleNumber.getTransportId() != null){
+                            setVariable("TRANSPORT_ID", vehicleNumber.getTransportId().toString());
+                        }
+                        if(vehicleNumber.getTransportReg() != null){
+                            setVariable("TRANSPORT_REG", vehicleNumber.getTransportReg().toString());
+                        }
+                    }
                 }else {
                     LOG.error("Yandex speech result is empty");
                 }
@@ -65,47 +90,5 @@ public class AGISpeechToText extends BaseAgiScript{
         }catch(AgiException ex){
             LOG.error("Exception ", ex);
         }
-    }
-    
-    @Deprecated
-    private Format detectFormat(){
-        try {            
-            String audionativeformat = getFullVariable("${CHANNEL(audionativeformat)}");
-            LOG.debug("audionativeformat: {}", audionativeformat);
-            if(audionativeformat.matches("(silk|sln)12")){
-                return new Format("sln12", 12000);
-            }
-            if(audionativeformat.matches("(speex|slin|silk)16|g722|siren7")){
-                return new Format("sln16", 16000);
-            }
-            if(audionativeformat.matches("(speex|slin|celt)32|siren14")){
-                return new Format("sln32", 32000);
-            }
-            if(audionativeformat.matches("(celt|slin)44")){
-                return new Format("sln44", 44100);
-            }
-            if(audionativeformat.matches("(celt|slin)48")){
-                return new Format("sln48", 48000);
-            }
-            return new Format("sln", 8000);
-        } catch (AgiException ex) {
-            LOG.error("Exception {}",ex);
-        }
-        return null;
-    }
-    
-    private class Format{
-        String name;
-        Integer freq;
-
-        public Format(String name, Integer freq) {
-            this.name = name;
-            this.freq = freq;
-        }
-
-        @Override
-        public String toString() {
-            return name+"/"+freq;
-        }   
     }
 }
