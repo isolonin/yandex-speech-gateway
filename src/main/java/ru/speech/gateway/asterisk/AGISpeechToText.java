@@ -86,6 +86,8 @@ public class AGISpeechToText extends BaseAgiScript{
                         if(vehicleNumber.getTransportReg() != null){
                             setVariable("TRANSPORT_REG", vehicleNumber.getTransportReg().toString());
                         }
+                    }else {
+                        LOG.error("Can't get parse results");
                     }
                 }else {
                     LOG.error("Yandex speech result is empty");
