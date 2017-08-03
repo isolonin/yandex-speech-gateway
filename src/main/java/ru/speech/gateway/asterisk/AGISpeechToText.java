@@ -81,7 +81,7 @@ public class AGISpeechToText extends BaseAgiScript{
                         VehicleNumber vehicleNumber = vehicleNumberList.get(0);
                         setVariable("TRANSPORT_CHARS", vehicleNumber.getTransportChars());
                         if(vehicleNumber.getTransportId() != null){
-                            setVariable("TRANSPORT_ID", vehicleNumber.getTransportId());
+                            setVariable("TRANSPORT_ID", vehicleNumber.getTransportId().toString());
                         }
                         if(vehicleNumber.getTransportReg() != null){
                             setVariable("TRANSPORT_REG", vehicleNumber.getTransportReg().toString());
