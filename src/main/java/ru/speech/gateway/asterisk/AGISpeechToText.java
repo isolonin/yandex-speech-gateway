@@ -47,7 +47,7 @@ public class AGISpeechToText extends BaseAgiScript{
             recordFile(fileName, "wav", "#", 10000, 0, false, maxSilence.intValue());
             
             if(sayWaitText != null){
-                String sayWaitTextPath = Yandex.textToSpeech(DigestUtils.md5Hex(sayWaitText)+".wav", key, sayWaitText, "wav", "oksana", "good", null);
+                String sayWaitTextPath = Yandex.textToSpeech(DigestUtils.md5Hex(sayWaitText)+".wav", key, sayWaitText, "wav", "oksana", "good");
                 int result = exec("Playback", sayWaitTextPath.replaceFirst("\\.(.*)$", ",$1"));
                 LOG.info("exec return {}", result);
             }

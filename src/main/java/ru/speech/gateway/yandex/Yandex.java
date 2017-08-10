@@ -87,6 +87,9 @@ public class Yandex {
         return result.toString().replaceAll("\\.\\.", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "");
     }
     
+    public static String textToSpeech(String fileName, String key, String text, String format, String speaker, String emotion){
+        return textToSpeech(fileName, key, text, format, speaker, emotion, null);
+    }
     public static String textToSpeech(String fileName, String key, String text, String format, String speaker, String emotion, String spellout){
         try{
             //curl -v "https://tts.voicetech.yandex.net/generate?format=mp3&lang=ru-RU&speaker=oksana&

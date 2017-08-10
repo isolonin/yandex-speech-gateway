@@ -46,14 +46,17 @@ public class AGITextToSpeech extends BaseAgiScript{
             String emotion = getValueByParameters(ar, "emotion", false, "good");
             String fileName = getValueByParameters(ar, "file", false);
             String spellout = getValueByParameters(ar, "spellout", false);
-            if(fileName == null){
+            String background = getValueByParameters(ar, "background", false);
+            if(fileName == null || fileName.isEmpty()){
                 fileName = DigestUtils.md5Hex(text.getBytes())+"."+format;
             }
             String filePath = Yandex.textToSpeech(fileName, key, text, format, speaker, emotion, spellout);
             if(filePath != null){
                 String ext = filePath.replaceFirst("\\..*$", "");
-                int result = exec("Playback", filePath.replaceFirst("\\.(.*)$", ",$1"));
-                LOG.info("exec return {}", result);
+                int result;
+                String command = background == null || background.isEmpty()?"Playback":"BackGround";
+                result = exec(command, filePath.replaceFirst("\\.(.*)$", ",$1"));
+                LOG.info("exec {} return {}", command, result);
             }            
         }catch(KeyNotFound ex){
             LOG.error(ex.getMessage());
