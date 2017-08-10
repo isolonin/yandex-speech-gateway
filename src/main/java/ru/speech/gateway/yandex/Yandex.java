@@ -6,12 +6,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,12 +42,63 @@ import org.xml.sax.SAXException;
 public class Yandex {
     private static final Logger LOG = LoggerFactory.getLogger(Yandex.class);
     private static final String CACHEPATH = "cache/";
+    private static final Map<String,String> CHARTONAME = new HashMap<>();
     
-    public static String textToSpeech(String fileName, String key, String text, String format, String speaker, String emotion){
+    static {
+        CHARTONAME.put("A", "Алексей");
+        CHARTONAME.put("B", "Вадим");
+        CHARTONAME.put("E", "Евгений");
+        CHARTONAME.put("K", "Катерина");
+        CHARTONAME.put("M", "Михаил");
+        CHARTONAME.put("H", "Николай");
+        CHARTONAME.put("O", "Олег");
+        CHARTONAME.put("P", "Руслан");
+        CHARTONAME.put("C", "Сергей");
+        CHARTONAME.put("T", "Тарас");
+        CHARTONAME.put("X", "Харитон");
+        CHARTONAME.put("А", "Алексей");
+        CHARTONAME.put("В", "Вадим");
+        CHARTONAME.put("Е", "Евгений");
+        CHARTONAME.put("К", "Катерина");
+        CHARTONAME.put("М", "Михаил");
+        CHARTONAME.put("Н", "Николай");
+        CHARTONAME.put("О", "Олег");
+        CHARTONAME.put("Р", "Руслан");
+        CHARTONAME.put("С", "Сергей");
+        CHARTONAME.put("Т", "Тарас");
+        CHARTONAME.put("У", "Ульяна");
+        CHARTONAME.put("Х", "Харитон");
+    }
+    
+    public static String charsToNames(String text){
+        StringBuilder result = new StringBuilder();
+        
+        for(Character c:text.toCharArray()){
+            String name = CHARTONAME.get(c.toString().toUpperCase());
+            if(name != null){
+                result.append(name);
+            }else {
+                if(c.toString().matches("^[0-9А-Яа-яA-Za-z]$")){
+                    result.append(c.toString());
+                }                
+            }
+            result.append(".");
+        }
+        return result.toString().replaceAll("\\.\\.", ".").replaceFirst("^\\.", "").replaceFirst("\\.$", "");
+    }
+    
+    public static String textToSpeech(String fileName, String key, String text, String format, String speaker, String emotion, String spellout){
         try{
             //curl -v "https://tts.voicetech.yandex.net/generate?format=mp3&lang=ru-RU&speaker=oksana&
             //key=e88f99d1-d019-467b-b80c-9fb05563c688&emotion=good" -G --data-urlencode 
             //"text=Здравствуйте. Вас приветствует сеть 112. Продиктуйте номер машины" > speech.mp3
+            
+            //Продиктовать по словам - транслируем отдельную букву в имя
+            if(spellout != null && spellout.isEmpty() == false){                
+                text = charsToNames(text);
+            }
+            
+            LOG.info("textToSpeech({}, {}, {}, {}, {}, {}, {})",fileName,key,text,format,speaker,emotion,spellout);
             
             File file = new File(CACHEPATH+fileName);            
             
@@ -60,10 +112,10 @@ public class Yandex {
                 currentTime.add(Calendar.DAY_OF_MONTH, -3);
                 if(lastModified.after(currentTime.getTime())){
                     LOG.info("File \"{}\" exist in cache. Last modified {}", file.getAbsoluteFile(), sdf.format(lastModified));
+                    return file.getAbsolutePath();
                 }else {
-                    LOG.info("File \"{}\" EXPIRED in cache. Last modified {}", file.getAbsoluteFile(), sdf.format(lastModified));
+                    LOG.info("File \"{}\" EXPIRED in cache. Rewrite. Last modified {}", file.getAbsoluteFile(), sdf.format(lastModified));
                 }
-                LOG.info("Rewrite file");
             }
             
             StringBuilder sb = new StringBuilder();

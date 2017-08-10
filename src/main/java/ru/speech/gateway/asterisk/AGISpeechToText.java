@@ -47,7 +47,7 @@ public class AGISpeechToText extends BaseAgiScript{
             recordFile(fileName, "wav", "#", 10000, 0, false, maxSilence.intValue());
             
             if(sayWaitText != null){
-                String sayWaitTextPath = Yandex.textToSpeech(DigestUtils.md5Hex(sayWaitText)+".wav", key, sayWaitText, "wav", "oksana", "good");
+                String sayWaitTextPath = Yandex.textToSpeech(DigestUtils.md5Hex(sayWaitText)+".wav", key, sayWaitText, "wav", "oksana", "good", null);
                 int result = exec("Playback", sayWaitTextPath.replaceFirst("\\.(.*)$", ",$1"));
                 LOG.info("exec return {}", result);
             }
@@ -73,6 +73,7 @@ public class AGISpeechToText extends BaseAgiScript{
                     for(String text:speechToTextList){
                         VehicleNumber vehicleNumber = getVehicleNumberByText(text);
                         if(vehicleNumber != null){
+                            LOG.info(vehicleNumber.toString());
                             vehicleNumberList.add(vehicleNumber);
                         }
                     }
