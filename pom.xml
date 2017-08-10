@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.112-24</groupId>
     <artifactId>yandex-speech-gateway</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>ru.112-24</groupId>
             <artifactId>vehicleUtils</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.3</version>
             <type>jar</type>
         </dependency>
     </dependencies>
